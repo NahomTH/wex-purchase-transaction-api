@@ -4,6 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,7 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "purchase")
-public class PurchaseEntity {
+public class Purchase {
 
     @Id
     @Column(nullable = false, updatable = false)
@@ -26,14 +29,14 @@ public class PurchaseEntity {
     @Column(name = "amount_usd", nullable = false, precision = 19, scale = 2)
     private BigDecimal amountUsd;
 
-    public PurchaseEntity(UUID id, String description, LocalDate localDate, BigDecimal amount) {
+    public Purchase(UUID id, String description, LocalDate localDate, BigDecimal amount) {
         this.id = id;
         this.description = description;
         this.transactionDate = localDate;
         this.amountUsd = amount;
     }
 
-    public PurchaseEntity() {}
+    public Purchase() {}
 
     public UUID getId() {
         return id;

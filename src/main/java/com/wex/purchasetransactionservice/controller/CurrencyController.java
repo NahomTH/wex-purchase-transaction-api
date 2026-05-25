@@ -21,7 +21,6 @@ public class CurrencyController {
     }
 
     @GetMapping("/all/currencies")
-    @Operation(summary = "Lists all the currency descriptors for currency parameter when converting")
     public ResponseEntity<Set<String>> getAllCurrencies() {
         return ResponseEntity.ok().body(currencyService.getAllCountryCurrencies());
     }

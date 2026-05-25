@@ -3,12 +3,10 @@ package com.wex.purchasetransactionservice.controller;
 import com.wex.purchasetransactionservice.dto.PurchaseRequest;
 import com.wex.purchasetransactionservice.dto.PurchaseResponse;
 import com.wex.purchasetransactionservice.dto.ConvertedPurchase;
-import com.wex.purchasetransactionservice.dto.Purchase;
+import com.wex.purchasetransactionservice.entity.Purchase;
 import com.wex.purchasetransactionservice.service.PurchaseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -29,11 +27,7 @@ public class PurchaseController {
     }
 
     @Operation(summary = "Store a purchase transaction",
-            description = "Persists a USD purchase and assigns a unique identifier. The amount is rounded to the nearest cent.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Purchase stored; Location header points to the stored resource"),
-            @ApiResponse(responseCode = "400", description = "Validation failed or the request body is malformed")
-    })
+            description = "Persists a USD purchase and assigns a unique identifier")
     @PostMapping("/purchases")
     public ResponseEntity<PurchaseResponse> create(@Valid @RequestBody PurchaseRequest purchaseRequest) {
         Purchase purchase = purchaseService.savePurchase(purchaseRequest);
@@ -45,24 +39,13 @@ public class PurchaseController {
     }
 
     @Operation(summary = "Retrieve a stored purchase by id")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Purchase found"),
-            @ApiResponse(responseCode = "404", description = "No purchase exists with the given id")
-    })
     @GetMapping("/purchases/{id}")
     public ResponseEntity<PurchaseResponse> getResponseById(@PathVariable UUID id) {
         return ResponseEntity.ok().body(PurchaseResponse.from(purchaseService.getPurchaseById(id)));
     }
 
     @Operation(summary = "Retrieve a stored purchase converted to a target currency",
-            description = "Converts the stored USD amount using the most recent Treasury exchange rate on or before "
-                    + "the purchase date, within the previous 6 months. The converted amount is rounded to two decimals.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Converted purchase returned"),
-            @ApiResponse(responseCode = "400", description = "Currency is not supported by the Treasury API"),
-            @ApiResponse(responseCode = "404", description = "No purchase exists with the given id"),
-            @ApiResponse(responseCode = "422", description = "No exchange rate available within 6 months on or before the purchase date")
-    })
+            description = "Converts the stored USD amount using the most recent Treasury exchange rate")
     @GetMapping("/purchases/converted/{id}")
     public ResponseEntity<ConvertedPurchase> getPurchaseByCurrencyType(
             @PathVariable final UUID id,
