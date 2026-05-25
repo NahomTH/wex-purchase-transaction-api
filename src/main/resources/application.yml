@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: purchase-transaction-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/purchases
+    username: purchases
+    password: purchases
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+treasury:
+  api:
+    base-url: https://api.fiscaldata.treasury.gov/services/api/fiscal_service
+    path: /v1/accounting/od/rates_of_exchange
+    page-size: 500
+    connect-timeout-ms: 2000
+    read-timeout-ms: 5000
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
