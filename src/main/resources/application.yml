@@ -2,9 +2,9 @@ spring:
   application:
     name: purchase-transaction-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/purchases
-    username: purchases
-    password: purchases
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/wexPurchases}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -12,7 +12,7 @@ spring:
 
 treasury:
   api:
-    base-url: https://api.fiscaldata.treasury.gov/services/api/fiscal_service
+    base-url: ${TREASURY_API_BASE_URL:https://api.fiscaldata.treasury.gov/services/api/fiscal_service}
     path: /v1/accounting/od/rates_of_exchange
     page-size: 500
     connect-timeout-ms: 2000

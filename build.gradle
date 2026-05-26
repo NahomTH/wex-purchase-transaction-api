@@ -5,8 +5,8 @@ plugins {
 }
 
 group = 'com.wex'
-version = '0.0.1-SNAPSHOT'
-description = 'wex-purchase-transaction-service'
+version = '1.0.0-RELEASE'
+description = 'purchase-transaction-service'
 
 java {
     toolchain {
