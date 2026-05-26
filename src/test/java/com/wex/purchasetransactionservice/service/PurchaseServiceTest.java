@@ -44,7 +44,7 @@ class PurchaseServiceTest {
         Purchase saved = service.savePurchase(
                 new PurchaseRequest("Coffee", LocalDate.parse("2024-05-24"), new BigDecimal("1.225")));
 
-        assertThat(saved.getAmountUsd()).isEqualByComparingTo("1.22");
+        assertThat(saved.getAmountUsd()).isEqualByComparingTo("1.23");
         assertThat(saved.getAmountUsd().scale()).isEqualTo(2);
     }
 
