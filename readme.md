@@ -1,6 +1,6 @@
 # Wex Purchase Transaction Service API 
 
-## Synopsis
+## Project Description
 
 Wex Purchase Transaction Service API Stores USD purchase transactions and retrieves them converted to a Treasury supported 
 foreign currency uses the most recent exchange within the <= 6 months.
