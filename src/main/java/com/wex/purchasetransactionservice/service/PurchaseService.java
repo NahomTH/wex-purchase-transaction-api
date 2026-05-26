@@ -44,7 +44,7 @@ public class PurchaseService {
         ExchangeRate applicableRate = exchangeRateService.findApplicableRate(currency, purchase.getTransactionDate());
         BigDecimal converted = purchase.getAmountUsd()
                 .multiply(applicableRate.exchangeRate())
-                .setScale(2, RoundingMode.HALF_EVEN);
+                .setScale(2, RoundingMode.HALF_UP);
         return new ConvertedPurchase(
                 purchase.getId(),
                 purchase.getDescription(),
@@ -58,7 +58,7 @@ public class PurchaseService {
 
     @Transactional
     public Purchase savePurchase(final PurchaseRequest purchaseRequest) {
-        BigDecimal normalizedAmount = purchaseRequest.purchaseAmount().setScale(2, RoundingMode.HALF_EVEN);
+        BigDecimal normalizedAmount = purchaseRequest.purchaseAmount().setScale(2, RoundingMode.HALF_UP);
         Purchase purchase = new Purchase(UUID.randomUUID(), purchaseRequest.description(), purchaseRequest.transactionDate(), normalizedAmount);
 
         return purchaseRepository.save(purchase);

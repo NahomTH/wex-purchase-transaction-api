@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadable(HttpMessageNotReadableException ex) {
         return ResponseEntity.badRequest().body(ErrorResponse.of(HttpStatus.BAD_REQUEST,
-                List.of("Malformed request body or invalid field format (e.g. date must be yyyy-MM-dd, amount must be numeric)")));
+                List.of("Bad request body")));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

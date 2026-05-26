@@ -31,8 +31,7 @@ public class CurrencyService {
                 log.info("Loaded {} distinct currencies from Treasury", fetched.size());
             }
         } catch (Exception e) {
-            log.warn("Failed to refresh currency list from Treasury; keeping {} cached entries",
-                    currencyList.size(), e);
+            log.warn("Failed to refresh currency list from Treasury;", e);
         }
     }
 
@@ -45,7 +44,7 @@ public class CurrencyService {
         ensureLoaded();
         if (currencyList.isEmpty()) {
             throw new CurrencyDataUnavailableException(
-                    "Supported currency list is unavailable; the Treasury API could not be reached");
+                    "Unable to reach the Treasury API");
         }
         return currencyList.contains(currency);
     }
