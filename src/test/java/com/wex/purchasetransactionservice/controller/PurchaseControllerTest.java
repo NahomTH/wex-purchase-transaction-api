@@ -5,6 +5,7 @@ import com.wex.purchasetransactionservice.entity.Purchase;
 import com.wex.purchasetransactionservice.exception.CurrencyNotFoundException;
 import com.wex.purchasetransactionservice.exception.ExchangeRateUnAvailableException;
 import com.wex.purchasetransactionservice.exception.PurchaseNotFoundException;
+import com.wex.purchasetransactionservice.exception.TreasuryServiceUnavailableException;
 import com.wex.purchasetransactionservice.service.PurchaseService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -108,6 +110,21 @@ class PurchaseControllerTest {
         mockMvc.perform(get("/api/v1/purchases/{id}", id))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value("404 NOT_FOUND"));
+    }
+
+    @Test
+    void getConverted_returns503WithRetryAfterWhenTreasuryDown() throws Exception {
+        when(purchaseService.retrieveConvertedPurchase(any(), any()))
+                .thenThrow(new TreasuryServiceUnavailableException(
+                        "The Treasury exchange rate service is temporarily unavailable. Please try again later.",
+                        new RuntimeException("connection refused")));
+
+        mockMvc.perform(get("/api/v1/purchases/converted/{id}", UUID.randomUUID())
+                        .param("currency", "Canada-Dollar"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(header().string("Retry-After", "30"))
+                .andExpect(jsonPath("$.status").value("503 SERVICE_UNAVAILABLE"))
+                .andExpect(jsonPath("$.messages[0]").exists());
     }
 
     @Test

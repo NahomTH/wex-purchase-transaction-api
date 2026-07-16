@@ -4,6 +4,7 @@ import com.wex.purchasetransactionservice.model.ExchangeRate;
 import com.wex.purchasetransactionservice.client.TreasuryExchangeRateClient;
 import com.wex.purchasetransactionservice.model.TreasuryRateResponse;
 import com.wex.purchasetransactionservice.exception.ExchangeRateUnAvailableException;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -19,6 +20,7 @@ public class ExchangeRateService {
         this.treasuryExchangeRateClient = treasuryExchangeRateClient;
     }
 
+    @Cacheable("exchange-rates")
     public ExchangeRate findApplicableRate(String countryCurrencyDesc, LocalDate purchaseDate) {
         LocalDate startDate = purchaseDate.minusMonths(6);
         List<TreasuryRateResponse.Record> records =

@@ -1,10 +1,12 @@
 package com.wex.purchasetransactionservice.client;
 
+import com.wex.purchasetransactionservice.exception.TreasuryServiceUnavailableException;
 import com.wex.purchasetransactionservice.model.TreasuryRateResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -44,17 +46,24 @@ public class TreasuryExchangeRateClientImpl implements TreasuryExchangeRateClien
 
     private TreasuryRateResponse fetchPage(LocalDate startDate, LocalDate endDate, int page, String countryDesc) {
         String filter = "country_currency_desc:in:(%s),record_date:gte:%s,record_date:lte:%s".formatted(countryDesc, startDate, endDate);
-        return treasuryRestClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path(ratesPath)
-                        .queryParam("fields", "country_currency_desc,exchange_rate,record_date")
-                        .queryParam("filter", filter)
-                        .queryParam("sort", "-record_date")
-                        .queryParam("page[number]", page)
-                        .queryParam("page[size]", pageSize)
-                        .build())
-                .retrieve()
-                .body(TreasuryRateResponse.class);
+        try {
+            return treasuryRestClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path(ratesPath)
+                            .queryParam("fields", "country_currency_desc,exchange_rate,record_date")
+                            .queryParam("filter", filter)
+                            .queryParam("sort", "-record_date")
+                            .queryParam("page[number]", page)
+                            .queryParam("page[size]", pageSize)
+                            .build())
+                    .retrieve()
+                    .body(TreasuryRateResponse.class);
+        } catch (RestClientException e) {
+            log.warn("Treasury API call failed fetching rates for {} ({} to {}), page {}: {}",
+                    countryDesc, startDate, endDate, page, e.getMessage());
+            throw new TreasuryServiceUnavailableException(
+                    "The Treasury exchange rate service is temporarily unavailable. Please try again later.", e);
+        }
     }
 
     @Override
@@ -64,15 +73,23 @@ public class TreasuryExchangeRateClientImpl implements TreasuryExchangeRateClien
         Set<String> distinct = new HashSet<>();
         while (true) {
             int finalPageNumber = pageNumber;
-            TreasuryRateResponse response = treasuryRestClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(ratesPath)
-                            .queryParam("fields", "country_currency_desc")
-                            .queryParam("page[size]", pageSize)
-                            .queryParam("page[number]", finalPageNumber)
-                            .build())
-                    .retrieve()
-                    .body(TreasuryRateResponse.class);
+            TreasuryRateResponse response;
+            try {
+                response = treasuryRestClient.get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path(ratesPath)
+                                .queryParam("fields", "country_currency_desc")
+                                .queryParam("page[size]", pageSize)
+                                .queryParam("page[number]", finalPageNumber)
+                                .build())
+                        .retrieve()
+                        .body(TreasuryRateResponse.class);
+            } catch (RestClientException e) {
+                log.warn("Treasury API call failed fetching distinct currencies, page {}: {}",
+                        finalPageNumber, e.getMessage());
+                throw new TreasuryServiceUnavailableException(
+                        "The Treasury exchange rate service is temporarily unavailable. Please try again later.", e);
+            }
 
             if (response == null || response.data() == null || response.data().isEmpty()) {
                 break;

@@ -3,6 +3,7 @@ package com.wex.purchasetransactionservice.exception;
 import com.wex.purchasetransactionservice.dto.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -16,6 +17,8 @@ import java.util.List;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final String RETRY_AFTER_SECONDS = "30";
 
     @ExceptionHandler(PurchaseNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(PurchaseNotFoundException ex) {
@@ -40,9 +43,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CurrencyDataUnavailableException.class)
     public ResponseEntity<ErrorResponse> handleCurrencyDataUnavailable(CurrencyDataUnavailableException ex) {
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
-                ErrorResponse.of(HttpStatus.SERVICE_UNAVAILABLE, List.of(ex.getMessage()))
-        );
+        log.warn("Currency data unavailable: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, RETRY_AFTER_SECONDS)
+                .body(ErrorResponse.of(HttpStatus.SERVICE_UNAVAILABLE, List.of(ex.getMessage())));
+    }
+
+    @ExceptionHandler(TreasuryServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleTreasuryUnavailable(TreasuryServiceUnavailableException ex) {
+        log.warn("Treasury API unavailable: {}", ex.getMessage(), ex.getCause());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, RETRY_AFTER_SECONDS)
+                .body(ErrorResponse.of(HttpStatus.SERVICE_UNAVAILABLE, List.of(ex.getMessage())));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

@@ -47,4 +47,12 @@ class CurrencyServiceTest {
         assertThatThrownBy(() -> service.checkCurrency("Canada-Dollar"))
                 .isInstanceOf(CurrencyDataUnavailableException.class);
     }
+
+    @Test
+    void getAllCountryCurrencies_throwsWhenListUnavailable() {
+        when(client.fetchAllDistinctCurrencies()).thenThrow(new RuntimeException("treasury down"));
+
+        assertThatThrownBy(() -> service.getAllCountryCurrencies())
+                .isInstanceOf(CurrencyDataUnavailableException.class);
+    }
 }

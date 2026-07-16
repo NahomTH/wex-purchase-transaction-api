@@ -1,5 +1,6 @@
 package com.wex.purchasetransactionservice.client;
 
+import com.wex.purchasetransactionservice.exception.TreasuryServiceUnavailableException;
 import com.wex.purchasetransactionservice.model.TreasuryRateResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.anything;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withServerError;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 class TreasuryExchangeRateClientImplTest {
@@ -51,5 +55,24 @@ class TreasuryExchangeRateClientImplTest {
         assertThat(records.getFirst().exchangeRate()).isEqualByComparingTo("1.35");
         assertThat(records.getFirst().countryCurrencyDesc()).isEqualTo(CAD);
         server.verify();
+    }
+
+    @Test
+    void fetchRates_throwsTreasuryServiceUnavailableWhenTreasuryFails() {
+        server.expect(anything()).andRespond(withServerError());
+
+        assertThatThrownBy(() ->
+                client.fetchRates(LocalDate.parse("2024-01-15"), LocalDate.parse("2024-07-15"), CAD))
+                .isInstanceOf(TreasuryServiceUnavailableException.class)
+                .hasMessageContaining("temporarily unavailable");
+    }
+
+    @Test
+    void fetchAllDistinctCurrencies_throwsTreasuryServiceUnavailableWhenTreasuryFails() {
+        server.expect(anything()).andRespond(withServerError());
+
+        assertThatThrownBy(() -> client.fetchAllDistinctCurrencies())
+                .isInstanceOf(TreasuryServiceUnavailableException.class)
+                .hasMessageContaining("temporarily unavailable");
     }
 }

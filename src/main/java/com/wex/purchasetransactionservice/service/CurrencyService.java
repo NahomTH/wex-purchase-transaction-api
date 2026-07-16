@@ -37,6 +37,10 @@ public class CurrencyService {
 
     public Set<String> getAllCountryCurrencies() {
         ensureLoaded();
+        if (currencyList.isEmpty()) {
+            throw new CurrencyDataUnavailableException(
+                    "Unable to reach the Treasury API");
+        }
         return currencyList;
     }
 
